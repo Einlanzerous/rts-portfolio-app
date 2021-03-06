@@ -4,6 +4,8 @@ import * as esbuild from 'esbuild-wasm';
 import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 import { fetchPlugin } from './plugins/fetch-plugin';
 
+const ESBUILD_WASM_VER = 'https://unpkg.com/esbuild-wasm@0.8.27/esbuild.wasm';
+
 const App = () => {
   const ref = useRef<esbuild.Service>();
   const [input, setInput] = useState('');
@@ -12,7 +14,7 @@ const App = () => {
   const startService = async () => {
     ref.current = await esbuild.startService({
       worker: true,
-      wasmURL: '/esbuild.wasm'
+      wasmURL: ESBUILD_WASM_VER
     });
   };
 

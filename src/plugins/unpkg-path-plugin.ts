@@ -13,7 +13,7 @@ export const unpkgPathPlugin = () => {
       // Handle relative paths for module imports
       build.onResolve({ filter: /^\.+\// }, (args) => {
         return {
-          namespace: 'a',
+          namespace: 'ab',
           path: new URL(args.path, 'https://unpkg.com' + args.resolveDir + '/')
             .href
         };
