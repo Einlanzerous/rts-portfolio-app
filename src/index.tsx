@@ -1,8 +1,10 @@
+import 'bulmaswatch/superhero/bulmaswatch.min.css';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import * as esbuild from 'esbuild-wasm';
 import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 import { fetchPlugin } from './plugins/fetch-plugin';
+import { CodeEditor } from './components/code-editor';
 
 const ESBUILD_WASM_VER = 'https://unpkg.com/esbuild-wasm@0.8.27/esbuild.wasm';
 
@@ -66,7 +68,11 @@ const App = () => {
   `;
 
   return (
-    <div>
+    <div className='editor-wrapper'>
+      <CodeEditor
+        initialValue='const canWriteCodeHere = true;'
+        onChange={(value) => setInput(value)}
+      />
       <textarea
         value={input}
         onChange={(event) => setInput(event.target.value)}
