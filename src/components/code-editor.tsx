@@ -59,7 +59,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <div>
+    <div className='editor-wrapper'>
       <button
         className="button button-format is-primary is-small"
         onClick={onFormatClick}
@@ -70,7 +70,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         value={initialValue}
         editorDidMount={onEditorDidMount}
         language="javascript"
-        height="500px"
+        height="100%"
         theme="dark"
         options={{
           wordWrap: 'on',
