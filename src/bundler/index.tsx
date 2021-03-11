@@ -4,9 +4,16 @@ import { fetchPlugin } from './plugins/fetch-plugin';
 
 const ESBUILD_WASM_VER = 'https://unpkg.com/esbuild-wasm@0.8.27/esbuild.wasm';
 
+interface BuildCodeOrError {
+  code: string;
+  error: string;
+}
+
 let service: esbuild.Service;
 
-export const bundleEsbuild = async (rawCode: string): Promise<string> => {
+export const bundleEsbuild = async (
+  rawCode: string
+): Promise<BuildCodeOrError> => {
   if (!service) {
     service = await esbuild.startService({
       worker: true,
@@ -14,16 +21,25 @@ export const bundleEsbuild = async (rawCode: string): Promise<string> => {
     });
   }
 
-  const result = await service.build({
-    entryPoints: ['index.js'],
-    bundle: true,
-    write: false,
-    plugins: [unpkgPathPlugin(), fetchPlugin(rawCode)],
-    define: {
-      'process.env.NODE_ENV': '"production"',
-      global: 'window'
-    }
-  });
-
-  return result.outputFiles[0].text;
+  try {
+    const result = await service.build({
+      entryPoints: ['index.js'],
+      bundle: true,
+      write: false,
+      plugins: [unpkgPathPlugin(), fetchPlugin(rawCode)],
+      define: {
+        'process.env.NODE_ENV': '"production"',
+        global: 'window'
+      }
+    });
+    return {
+      code: result.outputFiles[0].text,
+      error: ''
+    };
+  } catch (error) {
+    return {
+      code: '',
+      error: error.message
+    };
+  }
 };

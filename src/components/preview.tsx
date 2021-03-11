@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 interface PreviewProps {
   code: string;
+  bundlingStatus: string;
 }
 
 const html = `
@@ -13,13 +14,22 @@ const html = `
   <body>
     <div id='root'></div>
     <script>
+      const handleError = (error) => {
+        const root = document.querySelector('#root');
+        root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4>' + error + '</div>';
+        console.error(error);
+      };
+
+      window.addEventListener('error', (event) => {
+        event.preventDefault();
+        handleError(event.error);
+      });
+
       window.addEventListener('message', (event) => {
         try {
           eval(event.data);
-        } catch (err) {
-          const root = document.querySelector('#root');
-          root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4>' + err + '</div>';
-          console.error(err);
+        } catch (error) {
+          handleError(error);
         }
       }, false);
     </script>
@@ -27,13 +37,13 @@ const html = `
 </html>
 `;
 
-export const Preview: React.FC<PreviewProps> = ({ code }) => {
+export const Preview: React.FC<PreviewProps> = ({ code, bundlingStatus }) => {
   const iframe = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (iframe !== null && iframe.current !== null) {
       iframe.current.srcdoc = html;
-      
+
       setTimeout(() => {
         iframe?.current?.contentWindow?.postMessage(code, '*');
       }, 50);
@@ -48,6 +58,7 @@ export const Preview: React.FC<PreviewProps> = ({ code }) => {
         sandbox="allow-scripts"
         srcDoc={html}
       />
+      {bundlingStatus && <div className="preview-error">{bundlingStatus}</div>}
     </div>
   );
 };
