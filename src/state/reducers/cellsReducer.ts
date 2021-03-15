@@ -31,7 +31,7 @@ export const reducer = produce(
       case ActionType.DELETE_CELL:
         delete state.data[action.payload.id];
 
-        state.order = state.order.filter((orderId) => id !== orderId);
+        state.order = state.order.filter((orderId) => action.payload.id !== orderId);
 
         return state;
       case ActionType.MOVE_CELL:

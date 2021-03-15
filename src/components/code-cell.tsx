@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react';
 import { bundleEsbuild } from '../bundler';
+import { useActions } from '../hooks/use-actions';
+import { Cell } from '../state';
 import { CodeEditor } from './code-editor';
 import { Preview } from './preview';
 import { Resizable } from './resizable';
 
 const CODE_ENTRY_WAITING_PERIOD = 750;
-const EXAMPLE_CODE = `const canWriteCodeHere = true;\nconst root = document.querySelector('#root');\nroot.innerHTML = 'Welcome, write some code.';`;
 
-export const CodeCell = () => {
+interface CodeCellProps {
+  cell: Cell;
+}
+
+export const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const [input, setInput] = useState('');
+  const { updateCell } = useActions();
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      const output = await bundleEsbuild(input);
+      const output = await bundleEsbuild(cell.content);
 
       setCode(output.code);
       setError(output.error);
@@ -23,15 +28,15 @@ export const CodeCell = () => {
     return () => {
       clearTimeout(timer);
     };
-  }, [input]);
+  }, [cell.content]);
 
   return (
-    <Resizable direction="vertical">
+    <Resizable direction='vertical'>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'row' }}>
-        <Resizable direction="horizontal">
+        <Resizable direction='horizontal'>
           <CodeEditor
-            initialValue={EXAMPLE_CODE}
-            onChange={(value) => setInput(value)}
+            initialValue={cell.content}
+            onChange={(value) => updateCell(cell.id, value)}
           />
         </Resizable>
         <Preview code={code} bundlingStatus={error} />
