@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { bundleEsbuild } from '../bundler';
+import './code-cell.css';
+import { useEffect } from 'react';
 import { useActions } from '../hooks/use-actions';
+import { useTypedSelector } from '../hooks/use-typed-selector';
 import { Cell } from '../state';
 import { CodeEditor } from './code-editor';
 import { Preview } from './preview';
@@ -13,33 +14,49 @@ interface CodeCellProps {
 }
 
 export const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const { updateCell } = useActions();
+  const { updateCell, createBundle } = useActions();
+  const bundle = useTypedSelector((state) => state.bundles[cell.id]);
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const output = await bundleEsbuild(cell.content);
+    if (!bundle) {
+      createBundle(cell.id, cell.content);
+      return;
+    }
 
-      setCode(output.code);
-      setError(output.error);
+    const timer = setTimeout(async () => {
+      createBundle(cell.id, cell.content);
     }, CODE_ENTRY_WAITING_PERIOD);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [cell.content]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cell.id, cell.content, createBundle]);
 
   return (
     <Resizable direction='vertical'>
-      <div style={{ height: 'calc(100% - 10px)', display: 'flex', flexDirection: 'row' }}>
+      <div
+        style={{
+          height: 'calc(100% - 10px)',
+          display: 'flex',
+          flexDirection: 'row'
+        }}
+      >
         <Resizable direction='horizontal'>
           <CodeEditor
             initialValue={cell.content}
             onChange={(value) => updateCell(cell.id, value)}
           />
         </Resizable>
-        <Preview code={code} bundlingStatus={error} />
+        {!bundle || bundle.loading ? (
+          <div className='progress-cover'>
+            <progress className='progress is-small is-primary' max='100'>
+              Loading...
+            </progress>
+          </div>
+        ) : (
+          <Preview code={bundle.code} bundlingStatus={bundle.error} />
+        )}
       </div>
     </Resizable>
   );
