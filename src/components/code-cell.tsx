@@ -6,6 +6,7 @@ import { Cell } from '../state';
 import { CodeEditor } from './code-editor';
 import { Preview } from './preview';
 import { Resizable } from './resizable';
+import { useCumulativeCode } from '../hooks/use-cumulative-code';
 
 const CODE_ENTRY_WAITING_PERIOD = 750;
 
@@ -16,22 +17,23 @@ interface CodeCellProps {
 export const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
   const { updateCell, createBundle } = useActions();
   const bundle = useTypedSelector((state) => state.bundles[cell.id]);
+  const cumulativeCode = useCumulativeCode(cell.id);
 
   useEffect(() => {
     if (!bundle) {
-      createBundle(cell.id, cell.content);
+      createBundle(cell.id, cumulativeCode);
       return;
     }
 
     const timer = setTimeout(async () => {
-      createBundle(cell.id, cell.content);
+      createBundle(cell.id, cumulativeCode);
     }, CODE_ENTRY_WAITING_PERIOD);
 
     return () => {
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cell.id, cell.content, createBundle]);
+  }, [cell.id, cumulativeCode, createBundle]);
 
   return (
     <Resizable direction='vertical'>
